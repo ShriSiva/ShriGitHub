@@ -1,0 +1,130 @@
+'''Switcher Problem - "Using python to create multiple functions to switch values"
+   Name - Shriram Sivaraman
+   Description - The objective of the program is to create multiple functions to switch the occurence of
+                 given charcter or string with the values in the input string '''
+
+## Problem 1 - Accomplish switcher using characters to switch them in the given input string
+def switcheroo1(word, char1, char2):
+    L=len(word)
+    ## to return the string if the given input is not as expected
+    if L<2 or len(char1)!=1 or len(char2)!=1:
+        return word
+    i, j, word=0, L-1, list(word)
+    while i<(L/2):
+        if word[i] == char1:
+            while j >= (L/2):
+                if word[j]==char2:
+                    ## switching the values for char1 and char2
+                    word[i], word[j] = word[j], word[i]
+                    j -= 1
+                    break
+                j -= 1
+        i += 1
+    return ''.join(word)  ## returning as string
+
+## Problem 2 - Accomplish switcher using strings to switch them in the given input string
+## defining a function to create a subsequence
+def check_Sub_Seq(mainArray, start, end, subArray):
+    for i in range(len(subArray)):
+        if (start+i) >= end or subArray[i] != mainArray[start+i]:
+            return False
+        return True
+
+def switcheroo2(word, str1, str2):
+    L, M, N = len(word), len(str1), len(str2)
+    ## to return the string if the given input is not as expected
+    if L < M + N or len(str1)==0 or len(str2)==0:
+        return word
+    if M > L/2 or N > L/2:
+        return word
+    ## converting the input strings as list for traversal
+    word, str1, str2 = list(word), list(str1), list(str2)
+
+    i, j, count = 0, L - 1, 0
+    ## Loop runs until the expected string matches with the input
+    while i<(L/2) and j>=L/2:
+        if check_Sub_Seq(word, i, L/2, str1):
+            while j>=(L/2):
+                if check_Sub_Seq(word, j, L, str2):
+                    for k in range(M):
+                        word[k+i]= None
+                    for k in range(N):
+                        word[j+k]=None
+                    count += 2
+                    j -= 1
+                    break
+                j -= 1
+            i += M-1
+        i += 1
+    ## appending the elements in an empty list
+    result = []
+    i, c = 0, count>>1
+    while i<L:
+        if word[i] == None:
+            if i < (L >> 1) and count>=c:
+                i += M-1
+                result += str2  ## switching the string1
+            else:
+                i += N-1
+                result += str1  ## switching the string2
+            count -= 1
+        else:
+            result.append(word[i])
+        i += 1
+    return ''.join(result)    ## returning as string
+
+## Problem 3 - Accomplish switcher using characters to switch them in the given input string with recursive function
+def switcheroo1_recursive(word, char1, char2):
+    def switch_char(word, char1, char2, i, j):
+        ## to return the string if the given input is not as expected
+        if i >= (len(word)>>1) or j < (len(word)>>1):
+            return word
+        m, n = i + 1, j - 1
+        if word[i] == char1 and word[j] != char2:
+            m -= 1
+        elif word[i] != char1 and word[j] == char2:
+            n += 1
+        elif word[i] == char1 and word[j] == char2:
+            ## switching the values for char1 and char2
+            word[i], word[j] = word[j], word[i]    
+        return switch_char(word, char1, char2, m, n)
+    L = len(word)
+    return word if (L<2 or len(char1)!=1 or len(char2)!=1) else ''.join(switch_char(list(word), char1, char2, 0, L-1))
+
+
+## Problem 4 - Accomplish switcher using strings to switch them in the given input string with recursive function
+def switcheroo2_recursive(word, str1, str2):
+    def switch_word(word, str1, str2, i, j, limit_i, m, n):
+        L, M, N= len(word), len(str1), len(str2)
+        ## to return the string if the given input is not as expected
+        if i >= limit_i or j < (L/2):
+            return list(word)
+        next_i, next_j = i, j
+        word, str1, str2 = list(word), list(str1), list(str2)
+        ## to invoke subsequence for the string
+        m = m or check_Sub_Seq(word, i, limit_i, str1)
+        n = n or check_Sub_Seq(word, j, L, str2)
+        if not m and not n:
+            next_i+=1
+            next_j-=1
+        elif m and not n:
+            next_j-=1
+        elif not m and n:
+            next_i+=1
+        elif m and n:
+            word = word[:i] + str2 + word[i+M:j] + str1 + word[j+N:L]  ## switching the values across places
+            limit_i += N - M
+            next_i += N
+            m = n = False
+        return switch_word(word, str1, str2, next_i, next_j, limit_i, m, n) 
+
+    L, M, N= len(word), len(str1), len(str2)
+    return word if (L<M + N or M==0 or N==0 or (L/2)<(M or N)) else ''.join(switch_word(word, str1, str2, 0, L - 1, L /2, False, False))
+
+
+##Test Case Scenarios
+
+print "abacdeff swithced to ",switcheroo1("abacdeff","a","e")
+print "abcabdefff swithced to ",switcheroo2("abcabdefff","ab","eff")
+print "abacdeff swithced to ",switcheroo1_recursive("abacdeff","a","e")
+print "abcabdefff swithced to ",switcheroo2_recursive("abcabdefff","ab","eff")
